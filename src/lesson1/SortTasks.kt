@@ -2,6 +2,36 @@
 
 package lesson1
 
+import java.io.File
+import java.util.*
+import kotlin.collections.ArrayList
+
+fun <T> Array<T>.radixSort(maxElementLength: Int, bucketsCount: Int, digitAt: (T, Int) -> Int) {
+    val buckets: Array<Queue<T>> = Array(bucketsCount) { LinkedList<T>() }
+
+    var sorted = false
+    var j = maxElementLength
+
+    while (!sorted) {
+        sorted = true
+        for (element in this) {
+            val bucket = digitAt(element, j)
+            if (j >= 0) {
+                sorted = false
+                if (bucket > 0) buckets[bucket].add(element) else buckets[0].add(element)
+            }
+        }
+
+        j--
+        var i = 0
+        for (bucket in buckets) {
+            while (bucket.isNotEmpty()) {
+                this[i++] = bucket.remove()
+            }
+        }
+    }
+}
+
 /**
  * Сортировка времён
  *
@@ -31,7 +61,29 @@ package lesson1
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
 fun sortTimes(inputName: String, outputName: String) {
-    TODO()
+
+    val format = Regex("""[0-2]\d:[0-6]\d:[0-6]\d""")
+    val result = mutableListOf<String>()
+
+    for (line in File(inputName).readLines()) {
+        if (line.isEmpty()) continue
+        if (!line.matches(format)) {
+            throw IllegalArgumentException("Date format is invalid. Should be '00:00:00' instead of '$line'")
+        }
+        result.add(line.filter { it != ':' })
+    }
+
+    val resultArray = result.toTypedArray()
+    resultArray.radixSort(6, 10) { elem, index ->
+        if (index >= 0 && index < elem.length) elem[index] - '0' else -1
+    }
+
+    File(outputName).bufferedWriter().use {
+        for (line in resultArray.asList()) {
+            it.write("${line.slice(0..1)}:${line.slice(2..3)}:${line.slice(4..5)}")
+            it.newLine()
+        }
+    }
 }
 
 /**
@@ -61,8 +113,60 @@ fun sortTimes(inputName: String, outputName: String) {
  * В случае обнаружения неверного формата файла бросить любое исключение.
  */
 fun sortAddresses(inputName: String, outputName: String) {
-    TODO()
+    val format = Regex("""[А-ЯЁ][а-яё]+ [А-ЯЁ][а-яё]+ - [А-ЯЁ][а-яё]+ \d+""")
+    val addressMap = mutableMapOf<String, ArrayList<String>>()
+    var maxAddressLen = 0
+    var maxNameLen = 0
+
+    for (line in File(inputName).readLines()) {
+        if (line.isEmpty()) continue
+        if (!line.matches(format)) {
+            throw IllegalArgumentException("Input format is invalid.")
+        }
+
+        val data = line.split(" - ")
+        val list = addressMap.getOrDefault(data[1], arrayListOf())
+        list.add(data[0])
+        addressMap[data[1]] = list
+        if (data[0].length > maxNameLen) maxNameLen = data[1].length
+        if (data[1].length > maxAddressLen) maxAddressLen = data[1].length
+    }
+
+
+    val addresses = addressMap.keys.toTypedArray()
+    //sort by numbers
+    addresses.radixSort(maxAddressLen / 2, 10) { elem, index ->
+        val filteredString = elem.replace("[А-Яа-я ]+".toRegex(), "")
+        if (index >= 0 && index < filteredString.length) filteredString[index] - '0' else -1
+    }
+    // sort by letters
+    addresses.radixSort(maxAddressLen, 32) { elem, index -> letterInAddressAt(elem, index) }
+
+    File(outputName).bufferedWriter().use {
+        for (address in addresses) {
+            val people = addressMap[address]!!.toTypedArray()
+            people.radixSort(maxNameLen, 33) { elem, index -> letterInNameAt(elem, index) }
+
+            it.write("$address - ${people.asList().joinToString()}")
+            it.newLine()
+        }
+    }
 }
+
+fun letterInAddressAt(str: String, index: Int): Int {
+    val filteredString = str.filter { it !in "0123456789 " }.toLowerCase()
+    return if (index >= 0 && index < filteredString.length) filteredString[index] - 'а' else -1
+}
+
+fun letterInNameAt(str: String, index: Int): Int {
+    val filteredString = str.toLowerCase()
+    return if (index >= 0 && index < filteredString.length) {
+        if (filteredString[index] != ' ') filteredString[index] - 'а' + 1 else 0
+    } else {
+        -1
+    }
+}
+
 
 /**
  * Сортировка температур
@@ -95,7 +199,30 @@ fun sortAddresses(inputName: String, outputName: String) {
  * 121.3
  */
 fun sortTemperatures(inputName: String, outputName: String) {
-    TODO()
+
+    val format = Regex("""-?\d+.\d+""")
+    val firstBucketValue = -2730
+    val buckets = Array(7740) { 0 }
+
+    for (line in File(inputName).readLines()) {
+        if (line.isEmpty()) continue
+        if (!line.matches(format)) {
+            throw IllegalArgumentException("Temperature format is invalid.")
+        }
+        buckets[line.filter { it != '.' }.toInt() - firstBucketValue]++
+    }
+
+    File(outputName).bufferedWriter().use {
+        for ((bucketIndex, bucket) in buckets.withIndex()) {
+            for (i in 0 until bucket) {
+                val integerPart = (bucketIndex + firstBucketValue) / 10
+                val dotPart = (bucketIndex + firstBucketValue) % 10
+                if (integerPart == 0 && dotPart < 0) it.write("-")
+                it.write("$integerPart.${Math.abs(dotPart)}")
+                it.newLine()
+            }
+        }
+    }
 }
 
 /**
