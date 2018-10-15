@@ -6,6 +6,14 @@ import java.io.File
 import java.util.*
 import kotlin.collections.ArrayList
 
+/**
+ * Поразрядная сортировка (LSD)
+ * Сложность: O(n)
+ *      O(mn + km), где m - максимальное количество разрядов, константа
+ *                      k - количество возможных значений разрядов, константа
+ * Память: O(n)
+ *      O(n + km)
+ */
 fun <T> Array<T>.radixSort(maxElementLength: Int, bucketsCount: Int, digitAt: (T, Int) -> Int) {
     val buckets: Array<Queue<T>> = Array(bucketsCount) { LinkedList<T>() }
 
@@ -21,8 +29,8 @@ fun <T> Array<T>.radixSort(maxElementLength: Int, bucketsCount: Int, digitAt: (T
                 if (bucket > 0) buckets[bucket].add(element) else buckets[0].add(element)
             }
         }
-
         j--
+
         var i = 0
         for (bucket in buckets) {
             while (bucket.isNotEmpty()) {
@@ -59,6 +67,9 @@ fun <T> Array<T>.radixSort(maxElementLength: Int, bucketsCount: Int, digitAt: (T
  * 19:56:14
  *
  * В случае обнаружения неверного формата файла бросить любое исключение.
+ *
+ * Сложность: O(n)
+ * Память: O(n)
  */
 fun sortTimes(inputName: String, outputName: String) {
 
@@ -111,6 +122,9 @@ fun sortTimes(inputName: String, outputName: String) {
  * Садовая 5 - Сидоров Петр, Сидорова Мария
  *
  * В случае обнаружения неверного формата файла бросить любое исключение.
+ *
+ * Сложность: O(n)
+ * Память: O(n)
  */
 fun sortAddresses(inputName: String, outputName: String) {
     val format = Regex("""[А-ЯЁ][а-яё]+ [А-ЯЁ][а-яё]+ - [А-ЯЁ][а-яё]+ \d+""")
@@ -197,6 +211,9 @@ fun letterInNameAt(str: String, index: Int): Int {
  * 24.7
  * 99.5
  * 121.3
+ *
+ * Сложность: O(n)
+ * Память: O(7740) -> O(1)
  */
 fun sortTemperatures(inputName: String, outputName: String) {
 

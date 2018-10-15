@@ -90,6 +90,9 @@ fun josephTask(menNumber: Int, choiceInterval: Int): Int {
  * При сравнении подстрок, регистр символов *имеет* значение.
  * Если имеется несколько самых длинных общих подстрок одной длины,
  * вернуть ту из них, которая встречается раньше в строке first.
+ *
+ * Сложность: O(nm), где n и m - длины исходных строк
+ * Память: O(nm)
  */
 fun longestCommonSubstring(first: String, second: String): String {
     val similarityTable = Array(first.length) { IntArray(second.length) }
