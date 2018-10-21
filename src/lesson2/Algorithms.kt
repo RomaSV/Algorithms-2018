@@ -2,6 +2,9 @@
 
 package lesson2
 
+import lesson3.Trie
+import java.io.File
+
 /**
  * Получение наибольшей прибыли (она же -- поиск максимального подмассива)
  * Простая
@@ -166,5 +169,78 @@ fun calcPrimesNumber(limit: Int): Int {
  * Остальные символы ни в файле, ни в словах не допускаются.
  */
 fun baldaSearcher(inputName: String, words: Set<String>): Set<String> {
-    TODO()
+
+    val format = Regex("""[А-ЯЁA-Z ]+""")
+    val wordMatrix = ArrayList<Char>()
+    val wordsTrie = Trie()
+    val result = HashSet<String>()
+
+    var width = 0
+    var height = 0
+
+    for (word in words) {
+        wordsTrie.add(word)
+    }
+
+    for (line in File(inputName).readLines()) {
+        if (!line.matches(format)) {
+            throw IllegalArgumentException("Input format is invalid.")
+        }
+        val chars = line.split(" ")
+        if (width == 0) width = chars.size
+        height++
+
+        chars.forEach { char -> wordMatrix.add(char.first()) }
+    }
+
+    for (index in 0 until wordMatrix.size) {
+        result.addAll(findWordsAt(index, wordMatrix, width, height, wordsTrie))
+    }
+
+    return result
+}
+
+fun findWordsAt(index: Int, wordMatrix: List<Char>, width: Int, height: Int, words: Trie): Set<String> =
+        findWordsAt(index, wordMatrix, width, height, words, "", listOf())
+
+private fun findWordsAt(index: Int, wordMatrix: List<Char>, width: Int, height: Int, words: Trie,
+                        letters: String, visited: List<Int>): Set<String> {
+
+    val foundWords = HashSet<String>()
+
+    if (index !in visited) {
+        val thisLetters = letters + wordMatrix[index]
+        var visitedList = visited
+        visitedList += index
+
+        if (words.containsPrefix(thisLetters)) {
+
+            if (words.contains(thisLetters)) {
+                foundWords.add(thisLetters)
+            }
+
+            if (getX(index, width) > 0) {
+                foundWords.addAll(findWordsAt(index - 1, wordMatrix, width, height, words, thisLetters, visitedList))
+            }
+            if (getX(index, width) < width - 1) {
+                foundWords.addAll(findWordsAt(index + 1, wordMatrix, width, height, words, thisLetters, visitedList))
+            }
+            if (getY(index, width) > 0) {
+                foundWords.addAll(findWordsAt(index - width, wordMatrix, width, height, words, thisLetters, visitedList))
+            }
+            if (getY(index, width) < height - 1) {
+                foundWords.addAll(findWordsAt(index + width, wordMatrix, width, height, words, thisLetters, visitedList))
+            }
+        }
+    }
+
+    return foundWords
+}
+
+private fun getX(index: Int, width: Int): Int {
+    return index % width
+}
+
+private fun getY(index: Int, width: Int): Int {
+    return Math.floorDiv(index, width)
 }

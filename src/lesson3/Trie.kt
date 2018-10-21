@@ -25,6 +25,8 @@ class Trie : AbstractMutableSet<String>(), MutableSet<String> {
         return current
     }
 
+    fun containsPrefix(prefix: String): Boolean = findNode(prefix) != null
+
     override fun contains(element: String): Boolean =
             findNode(element.withZero()) != null
 
