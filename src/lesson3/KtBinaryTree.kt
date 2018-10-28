@@ -1,6 +1,6 @@
 package lesson3
 
-import java.util.SortedSet
+import java.util.*
 import kotlin.NoSuchElementException
 
 // Attention: comparable supported but comparator is not
@@ -145,16 +145,38 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
     inner class BinaryTreeIterator : MutableIterator<T> {
 
         private var current: Node<T>? = null
+        private var stack: Stack<Node<T>> = Stack()
+
+        init {
+            var node = root
+            while (node != null) {
+                stack.push(node)
+                node = node.left
+            }
+        }
 
         /**
          * Поиск следующего элемента
          * Средняя
+         *
+         * Сложность: в среднем - O(1); в худшем случае - O(h), где h - высота дерева
+         * Память: O(h)
          */
         private fun findNext(): Node<T>? {
-            return null // TODO
+
+            var node: Node<T>? = stack.pop()
+            val result: Node<T> = node!!
+
+            node = node.right
+            while (node != null) {
+                stack.push(node)
+                node = node.left
+            }
+
+            return result
         }
 
-        override fun hasNext(): Boolean = findNext() != null
+        override fun hasNext(): Boolean = stack.isNotEmpty()
 
         override fun next(): T {
             current = findNext()
@@ -166,7 +188,8 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
          * Сложная
          */
         override fun remove() {
-            return // TODO
+            if (current == null) return
+            remove(current!!.value)
         }
     }
 
