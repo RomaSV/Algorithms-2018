@@ -13,6 +13,8 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
 
     private class Node<T>(val value: T) {
 
+        var parent: Node<T>? = null
+
         var left: Node<T>? = null
 
         var right: Node<T>? = null
@@ -25,6 +27,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
             return false
         }
         val newNode = Node(element)
+        newNode.parent = closest
         when {
             closest == null -> root = newNode
             comparison < 0 -> {
@@ -57,43 +60,44 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
      * Сложность: O(h), где h - высота дерева
      */
     override fun remove(element: T): Boolean {
-        val pair = findWithParent(element)
-        val closest = pair?.second
+        val closest = find(element)
         if (closest == null || element.compareTo(closest.value) != 0) return false
+        return remove(closest)
+    }
 
-        val parent = pair.first
+    private fun remove(node: Node<T>): Boolean {
+
+        val parent = node.parent
 
         when {
-            closest.left == null && closest.right == null -> parent.replaceChild(closest, null)
-            closest.left == null -> parent.replaceChild(closest, closest.right)
-            closest.right == null -> parent.replaceChild(closest, closest.left)
+            node.left == null && node.right == null -> parent.replaceChild(node, null)
+            node.left == null -> parent.replaceChild(node, node.right)
+            node.right == null -> parent.replaceChild(node, node.left)
             else -> {
-                var change = closest.right
-                var changeParent = closest
+                var change = node.right
                 while (true) {
                     if (change!!.left == null) break
-                    changeParent = change
                     change = change.left
                 }
 
                 val replacement = Node(change!!.value)
 
-                if (closest.left != null && replacement.value != closest.left!!.value) {
-                    replacement.left = closest.left
+                if (node.left != null && replacement.value != node.left!!.value) {
+                    replacement.left = node.left
                 } else {
                     replacement.left = null
                 }
-                if (closest.right != null && replacement.value != closest.right!!.value) {
-                    replacement.right = closest.right
-                } else if (closest.right != null && closest.right!!.right != null) {
-                    replacement.right = closest.right!!.right
+                if (node.right != null && replacement.value != node.right!!.value) {
+                    replacement.right = node.right
+                } else if (node.right?.right != null) {
+                    replacement.right = node.right!!.right
                 } else {
                     replacement.right = null
                 }
 
-                parent.replaceChild(closest, replacement)
+                parent.replaceChild(node, replacement)
 
-                if (change.right != null) changeParent!!.replaceChild(change, change.right) else changeParent!!.replaceChild(change, null)
+                if (change.right != null) change.parent.replaceChild(change, change.right) else change.parent.replaceChild(change, null)
             }
         }
 
@@ -118,23 +122,8 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
         }
     }
 
-    private fun findWithParent(value: T): Pair<Node<T>?, Node<T>>? {
-        if (root == null) return null
-        if (root!!.value.compareTo(value) == 0) return Pair(null, root!!)
-        return root?.let { findWithParent(root, it, value) }
-    }
-
-
-    private fun findWithParent(parent: Node<T>?, start: Node<T>, value: T): Pair<Node<T>?, Node<T>> {
-        val comparison = value.compareTo(start.value)
-        return when {
-            comparison == 0 -> Pair(parent, start)
-            comparison < 0 -> start.left?.let { findWithParent(start, it, value) } ?: Pair(parent, start)
-            else -> start.right?.let { findWithParent(start, it, value) } ?: Pair(parent, start)
-        }
-    }
-
     private fun Node<T>?.replaceChild(node: Node<T>, newNode: Node<T>?) {
+        newNode?.parent = this
         when {
             this == null -> root = newNode
             this.left != null && this.left!!.value.compareTo(node.value) == 0 -> this.left = newNode
@@ -189,7 +178,7 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
          */
         override fun remove() {
             if (current == null) return
-            remove(current!!.value)
+            remove(current!!)
         }
     }
 
