@@ -168,8 +168,8 @@ class KtBinaryTree<T : Comparable<T>> : AbstractMutableSet<T>(), CheckableSorted
         override fun hasNext(): Boolean = stack.isNotEmpty()
 
         override fun next(): T {
-            current = findNext()
-            return (current ?: throw NoSuchElementException()).value
+            if (!hasNext()) throw NoSuchElementException()
+            return findNext()!!.value
         }
 
         /**

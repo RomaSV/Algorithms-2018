@@ -1,11 +1,9 @@
 package lesson3
 
 import org.junit.jupiter.api.Tag
-import kotlin.test.Test
 import java.util.*
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.NoSuchElementException
+import kotlin.test.*
 
 class BinaryTreeTest {
     private fun testAdd(create: () -> CheckableSortedSet<Int>) {
@@ -77,10 +75,33 @@ class BinaryTreeTest {
         }
     }
 
+    private fun testRemoveNotExistingItem(create: () -> CheckableSortedSet<Int>) {
+        val random = Random()
+
+        val toRemove = 42
+        val list = mutableListOf<Int>()
+        for (i in 1..20) {
+            if (i == toRemove) continue
+            list.add(random.nextInt(100))
+        }
+        val binarySet = create()
+
+        println("Removing $toRemove from an empty tree")
+        assertFalse(binarySet.remove(toRemove))
+
+        for (element in list) {
+            binarySet += element
+        }
+
+        println("Removing $toRemove from $list")
+        assertFalse(binarySet.remove(toRemove))
+    }
+
     @Test
     @Tag("Normal")
     fun testRemoveKotlin() {
         testRemove { createKotlinTree() }
+        testRemoveNotExistingItem { createKotlinTree() }
     }
 
     @Test
@@ -111,10 +132,24 @@ class BinaryTreeTest {
         }
     }
 
+    private fun testEmptyTreeIterator(create: () -> CheckableSortedSet<Int>) {
+        val binarySet = create()
+        val treeIt = binarySet.iterator()
+
+        println("Trying to iterate through an empty tree...")
+        try {
+            treeIt.next()
+            fail("Iterating through an empty tree should throw NoSuchElementException")
+        } catch (e: NoSuchElementException) {
+            println("NoSuchElementException has been caught")
+        }
+    }
+
     @Test
     @Tag("Normal")
     fun testIteratorKotlin() {
         testIterator { createKotlinTree() }
+        testEmptyTreeIterator { createKotlinTree() }
     }
 
     @Test
