@@ -81,8 +81,9 @@ class BinaryTreeTest {
         val toRemove = 42
         val list = mutableListOf<Int>()
         for (i in 1..20) {
-            if (i == toRemove) continue
-            list.add(random.nextInt(100))
+            val rand = random.nextInt(100)
+            if (rand == toRemove) continue
+            list.add(rand)
         }
         val binarySet = create()
 
