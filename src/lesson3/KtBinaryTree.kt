@@ -115,11 +115,7 @@ class KtBinaryTree<T : Comparable<T>>() : AbstractMutableSet<T>(), CheckableSort
                 replacement.right = if (replacement.value != node.right?.value) node.right else node.right?.right
                 parent.replaceChild(node, replacement)
 
-                if (change.right != null) {
-                    change.parent.replaceChild(change, change.right)
-                } else {
-                    change.parent.replaceChild(change, null)
-                }
+                change.parent.replaceChild(change, change.right)
             }
         }
 
@@ -215,8 +211,7 @@ class KtBinaryTree<T : Comparable<T>>() : AbstractMutableSet<T>(), CheckableSort
          * Сложная
          */
         override fun remove() {
-            if (current == null) return
-            remove(current!!)
+            remove(current ?: return)
         }
     }
 
