@@ -12,14 +12,27 @@ class GraphBuilder {
         override fun toString() = name
     }
 
-    data class EdgeImpl(private val weightField: Int,
-                        private val _begin: Vertex,
-                        private val _end: Vertex) : Edge {
+    data class EdgeImpl(private val _begin: Vertex,
+                        private val _end: Vertex,
+                        private val weightField: Int = 1) : Edge {
         override fun getBegin() = _begin
 
         override fun getEnd() = _end
 
         override fun getWeight() = weightField
+
+        // Т.к. графы в задачах неориентированные - считаем равными ребра (a,b) и (b,a)
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || javaClass != other.javaClass) return false
+            val that = other as EdgeImpl
+            return (begin == that.begin && end == that.end) || (begin == that.end && end == that.begin)
+        }
+
+        override fun hashCode(): Int {
+            return 31 * (_begin.hashCode() + _end.hashCode())
+        }
+
     }
 
     private val vertices = mutableMapOf<String, Vertex>()
@@ -37,7 +50,7 @@ class GraphBuilder {
     }
 
     fun addConnection(begin: Vertex, end: Vertex, weight: Int = 1) {
-        val edge = EdgeImpl(weight, begin, end)
+        val edge = EdgeImpl(begin, end, weight)
         connections[begin] = connections[begin]?.let { it + edge } ?: setOf(edge)
         connections[end] = connections[end]?.let { it + edge } ?: setOf(edge)
     }

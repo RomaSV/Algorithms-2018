@@ -2,6 +2,9 @@
 
 package lesson5
 
+import lesson5.impl.GraphBuilder
+import java.util.*
+
 /**
  * Эйлеров цикл.
  * Средняя
@@ -29,7 +32,43 @@ package lesson5
  * связного графа ровно по одному разу
  */
 fun Graph.findEulerLoop(): List<Graph.Edge> {
-    TODO()
+    if (!this.mayContainEulerLoop()) return listOf()
+
+    val result = mutableListOf<Graph.Edge>()
+    val resultVertices = Stack<Graph.Vertex>()
+
+    val edges = this.edges
+    val vertices = this.vertices
+    val verticesStack = Stack<Graph.Vertex>()
+    verticesStack.push(vertices.first())
+
+    while (verticesStack.isNotEmpty()) {
+        val current = verticesStack.peek()
+        for (vertex in vertices) {
+            val edge = GraphBuilder.EdgeImpl(current, vertex)
+            if (edges.contains(edge)) {
+                verticesStack.push(vertex)
+                edges.remove(edge)
+                break
+            }
+        }
+        if (current == verticesStack.peek()) {
+            verticesStack.pop()
+            if (resultVertices.isNotEmpty()) {
+                result.add(GraphBuilder.EdgeImpl(resultVertices.peek(), current))
+            }
+            resultVertices.push(current)
+        }
+    }
+
+    return result
+}
+
+fun Graph.mayContainEulerLoop(): Boolean {
+    for (vertex in this.vertices) {
+        if (this.getNeighbors(vertex).size % 2 != 0) return false
+    }
+    return true
 }
 
 /**
@@ -89,7 +128,31 @@ fun Graph.minimumSpanningTree(): Graph {
  * Эта задача может быть зачтена за пятый и шестой урок одновременно
  */
 fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
-    TODO()
+    val calculatedIndSets = mutableMapOf<Graph.Vertex, Set<Graph.Vertex>>()
+    return this.largestIndependentVertexSet(this.vertices.first(), null, calculatedIndSets)
+}
+
+fun Graph.largestIndependentVertexSet(
+        vertex: Graph.Vertex, parent: Graph.Vertex?,
+        calculated: MutableMap<Graph.Vertex, Set<Graph.Vertex>>): Set<Graph.Vertex> {
+
+    return calculated.getOrElse(vertex) {
+        var childrenSum = setOf<Graph.Vertex>()
+        var grandchildrenSum = setOf(vertex)
+
+        for (children in this.getNeighbors(vertex)) {
+            if (children == parent) continue
+            childrenSum += this.largestIndependentVertexSet(children, vertex, calculated)
+
+            for (grandchildren in this.getNeighbors(children)) {
+                if (grandchildren == vertex) continue
+                grandchildrenSum += this.largestIndependentVertexSet(grandchildren, children, calculated)
+            }
+        }
+        val result = if (grandchildrenSum.size >= childrenSum.size) grandchildrenSum else childrenSum
+        calculated[vertex] = result
+        return result
+    }
 }
 
 /**
