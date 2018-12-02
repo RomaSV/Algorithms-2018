@@ -65,6 +65,13 @@ abstract class AbstractGraphTests {
         }.build()
         val loop2 = graph2.findEulerLoop()
         loop2.assert(true, graph2)
+
+        val graph3 = GraphBuilder().apply {
+            val a = addVertex("A")
+            val b = addVertex("B")
+            addConnection(a, b)
+        }.build()
+        assertEquals(emptyList(), graph3.findEulerLoop())
     }
 
     fun minimumSpanningTree(minimumSpanningTree: Graph.() -> Graph) {
@@ -135,6 +142,9 @@ abstract class AbstractGraphTests {
         val independent = graph.largestIndependentVertexSet()
         assertEquals(setOf(graph["A"], graph["D"], graph["E"], graph["F"], graph["G"], graph["J"]),
                 independent)
+
+        val graph2 = GraphBuilder().apply { addVertex("A") }.build()
+        assertEquals(setOf(graph2["A"]), graph2.largestIndependentVertexSet())
     }
 
     fun longestSimplePath(longestSimplePath: Graph.() -> Path) {

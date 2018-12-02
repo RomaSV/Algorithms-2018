@@ -30,6 +30,9 @@ import java.util.*
  *
  * Справка: Эйлеров цикл -- это цикл, проходящий через все рёбра
  * связного графа ровно по одному разу
+ *
+ * Сложность: O(V + E)
+ * Память: O(V + E)
  */
 fun Graph.findEulerLoop(): List<Graph.Edge> {
     if (!this.mayContainEulerLoop()) return listOf()
@@ -64,6 +67,9 @@ fun Graph.findEulerLoop(): List<Graph.Edge> {
     return result
 }
 
+/**
+ * Сложность: O(V)
+ */
 fun Graph.mayContainEulerLoop(): Boolean {
     for (vertex in this.vertices) {
         if (this.getNeighbors(vertex).size % 2 != 0) return false
@@ -126,6 +132,9 @@ fun Graph.minimumSpanningTree(): Graph {
  * В данном случае ответ (A, E, F, D, G, J)
  *
  * Эта задача может быть зачтена за пятый и шестой урок одновременно
+ *
+ * Сложность: O(V + E)
+ * Память(приблизительно): O(V^2)
  */
 fun Graph.largestIndependentVertexSet(): Set<Graph.Vertex> {
     val calculatedIndSets = mutableMapOf<Graph.Vertex, Set<Graph.Vertex>>()
